@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f5fa8">
+<title>二等無人航空機操縦士 学科試験 練習【無料版】</title>
+<style>
+  :root {
+    --bg: #f3f6fa;
+    --card: #ffffff;
+    --text: #1d2733;
+    --muted: #5f6c7b;
+    --border: #d9e1ea;
+    --primary: #1f5fa8;
+    --primary-weak: #e8f0fa;
+    --ok: #1e8a4c;
+    --ok-weak: #e6f5ec;
+    --ng: #c2362f;
+    --ng-weak: #fbeceb;
+    --warn: #b7791f;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", Meiryo, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-text-size-adjust: 100%;
+  }
+  header.app {
+    background: var(--primary);
+    color: #fff;
+    padding: 14px 16px;
+    padding-top: calc(14px + env(safe-area-inset-top));
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  header.app h1 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: .02em; }
+  header.app button.link {
+    background: rgba(255,255,255,.15); color: #fff; border: 0;
+    padding: 6px 12px; border-radius: 999px; font-size: 13px; cursor: pointer;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 16px 14px 24px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+  }
+  h2 { font-size: 18px; margin: 0 0 10px; }
+  h3 { font-size: 15px; margin: 0 0 8px; }
+  p { margin: 0 0 8px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .hidden { display: none !important; }
+
+  /* Mode buttons */
+  .mode-btn {
+    display: block; width: 100%; text-align: left;
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; margin-bottom: 12px; cursor: pointer; font: inherit; color: inherit;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .mode-btn:hover, .mode-btn:focus-visible { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-weak); outline: none; }
+  .mode-btn .title { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .mode-btn .num {
+    display: inline-flex; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--primary); color: #fff; font-size: 14px; align-items: center; justify-content: center;
+  }
+  .mode-btn .desc { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  .mode-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .badge {
+    display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px;
+    background: var(--ng-weak); color: var(--ng); font-weight: 600;
+  }
+
+  .cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .cat-grid button {
+    font: inherit; padding: 14px 10px; border-radius: 12px; border: 1px solid var(--border);
+    background: var(--card); cursor: pointer; color: var(--text); font-weight: 600;
+  }
+  .cat-grid button small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; }
+  .cat-grid button.all { grid-column: 1 / -1; background: var(--primary-weak); border-color: var(--primary); color: var(--primary); }
+  .cat-grid button:hover { border-color: var(--primary); }
+
+  /* Quiz */
+  .quiz-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+  .progress-text { font-weight: 700; font-size: 15px; }
+  .tag { font-size: 12px; padding: 2px 10px; border-radius: 999px; background: var(--primary-weak); color: var(--primary); font-weight: 600; white-space: nowrap; }
+  .bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+  .bar > div { height: 100%; background: var(--primary); width: 0; transition: width .25s; }
+  .timer { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; }
+  .timer.low { color: var(--ng); }
+  .score-live { font-size: 13px; color: var(--muted); }
+  .question { font-size: 17px; font-weight: 600; margin-bottom: 14px; }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice {
+    display: flex; gap: 10px; align-items: flex-start; text-align: left;
+    width: 100%; font: inherit; font-size: 15px; color: var(--text);
+    background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+    padding: 14px 12px; cursor: pointer; min-height: 56px;
+    transition: border-color .12s, background .12s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .choice .lbl {
+    flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--border); display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: var(--muted);
+  }
+  .choice:hover:not(:disabled) { border-color: var(--primary); }
+  .choice.selected { border-color: var(--primary); background: var(--primary-weak); }
+  .choice.selected .lbl { border-color: var(--primary); background: var(--primary); color: #fff; }
+  .choice.correct { border-color: var(--ok); background: var(--ok-weak); }
+  .choice.correct .lbl { border-color: var(--ok); background: var(--ok); color: #fff; }
+  .choice.wrong { border-color: var(--ng); background: var(--ng-weak); }
+  .choice.wrong .lbl { border-color: var(--ng); background: var(--ng); color: #fff; }
+  .choice:disabled { cursor: default; }
+
+  .feedback { margin-top: 14px; border-radius: 12px; padding: 14px; }
+  .feedback.ok { background: var(--ok-weak); border: 1px solid #b9e2c8; }
+  .feedback.ng { background: var(--ng-weak); border: 1px solid #f1c3c0; }
+  .feedback .verdict { font-weight: 800; font-size: 18px; margin-bottom: 4px; }
+  .feedback.ok .verdict { color: var(--ok); }
+  .feedback.ng .verdict { color: var(--ng); }
+  .feedback .exp { font-size: 14px; }
+
+  .actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .btn {
+    flex: 1 1 auto; font: inherit; font-weight: 700; font-size: 15px;
+    padding: 13px 16px; border-radius: 12px; border: 1px solid var(--primary);
+    background: var(--primary); color: #fff; cursor: pointer; min-height: 48px;
+  }
+  .btn.secondary { background: var(--card); color: var(--primary); }
+  .btn.ghost { background: transparent; color: var(--muted); border-color: var(--border); font-weight: 600; }
+  .btn.danger { background: var(--card); color: var(--ng); border-color: #f1c3c0; font-weight: 600; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  .palette { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; margin-top: 14px; }
+  .palette button {
+    font: inherit; font-size: 13px; padding: 6px 0; border-radius: 8px; cursor: pointer;
+    border: 1px solid var(--border); background: var(--card); color: var(--muted);
+  }
+  .palette button.answered { background: var(--primary-weak); color: var(--primary); border-color: #b9cfea; font-weight: 700; }
+  .palette button.current { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+  /* Results */
+  .result-hero { text-align: center; padding: 22px 16px; }
+  .result-hero .pct { font-size: 46px; font-weight: 800; line-height: 1.1; }
+  .result-hero .sub { color: var(--muted); margin-top: 4px; }
+  .verdict-pill { display: inline-block; margin-top: 12px; padding: 6px 22px; border-radius: 999px; font-weight: 800; font-size: 18px; }
+  .verdict-pill.pass { background: var(--ok); color: #fff; }
+  .verdict-pill.fail { background: var(--ng); color: #fff; }
+  .cat-row { margin-bottom: 12px; }
+  .cat-row .head { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+  .cat-row .head b { font-variant-numeric: tabular-nums; }
+  .cat-row .meter { height: 10px; background: var(--border); border-radius: 999px; overflow: hidden; }
+  .cat-row .meter > div { height: 100%; border-radius: 999px; }
+  .missed { border-top: 1px solid var(--border); padding: 12px 0; }
+  .missed:first-of-type { border-top: 0; padding-top: 0; }
+  .missed .q { font-weight: 600; margin-bottom: 6px; }
+  .missed .row { font-size: 14px; margin-bottom: 2px; }
+  .missed .row.your { color: var(--ng); }
+  .missed .row.ans { color: var(--ok); font-weight: 600; }
+  .missed .exp { font-size: 13px; color: var(--muted); background: var(--bg); border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
+
+  .history { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .history th, .history td { padding: 6px 4px; border-bottom: 1px solid var(--border); text-align: left; }
+  .history td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .ok-text { color: var(--ok); font-weight: 700; }
+  .ng-text { color: var(--ng); font-weight: 700; }
+
+  footer.note {
+    text-align: center; color: var(--muted); font-size: 12px;
+    padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
+  }
+
+  @media (max-width: 380px) {
+    .question { font-size: 16px; }
+    .choice { font-size: 14px; }
+  }
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1a3a5c">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+
+<header class="app">
+  <h1>ドローン二等 学科練習</h1>
+  <button class="link hidden" id="homeBtn" type="button">ホーム</button>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section id="screen-home">
+    <div class="card">
+      <h2>二等無人航空機操縦士 学科試験</h2>
+      <p class="muted">三肢択一式。無料版の模擬試験は10問・制限時間10分です（本番は50問・30分）。</p>
+    </div>
+
+    <button class="mode-btn" id="modePractice" type="button">
+      <div class="title"><span class="num">1</span>分野別演習</div>
+      <div class="desc">分野を選んで1問ずつ解答。解答直後に正誤と解説を表示します。</div>
+    </button>
+    <button class="mode-btn" id="modeMock" type="button">
+      <div class="title"><span class="num">2</span>模擬試験</div>
+      <div class="desc">全問シャッフル・30分の制限時間。結果は最後にまとめて表示します。</div>
+    </button>
+    <button class="mode-btn" id="modeReview" type="button">
+      <div class="title"><span class="num">3</span>復習モード <span class="badge" id="wrongBadge">0問</span></div>
+      <div class="desc" id="reviewDesc">これまでに間違えた問題だけを解き直します。正解すると復習リストから外れます。</div>
+    </button>
+
+    <div class="card" id="historyCard">
+      <h3>学習履歴</h3>
+      <div id="historyBody"></div>
+      <div class="actions">
+        <button class="btn danger" id="resetBtn" type="button">履歴と復習リストを消去</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CATEGORY SELECT -->
+  <section id="screen-category" class="hidden">
+    <div class="card">
+      <h2>分野を選択</h2>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+    <div class="actions"><button class="btn ghost" type="button" data-go-home>戻る</button></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="screen-quiz" class="hidden">
+    <div class="card">
+      <div class="quiz-top">
+        <span class="progress-text" id="progressText">1/24</span>
+        <span class="tag" id="catTag">規則</span>
+        <span class="timer hidden" id="timer">30:00</span>
+        <span class="score-live hidden" id="scoreLive"></span>
+      </div>
+      <div class="bar"><div id="progressBar"></div></div>
+      <div class="question" id="questionText"></div>
+      <div class="choices" id="choices"></div>
+      <div id="feedback" class="feedback hidden"></div>
+      <div class="actions" id="quizActions"></div>
+      <div class="palette hidden" id="palette"></div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section id="screen-result" class="hidden">
+    <div class="card result-hero" id="resultHero"></div>
+    <div class="card">
+      <h3>分野別の正答率</h3>
+      <div id="resultCats"></div>
+    </div>
+    <div class="card">
+      <h3 id="missedTitle">間違えた問題</h3>
+      <div id="resultMissed"></div>
+    </div>
+    <div class="actions">
+      <button class="btn secondary" id="retryBtn" type="button">もう一度</button>
+      <button class="btn" type="button" data-go-home>ホームへ</button>
+    </div>
+  </section>
+</main>
+
+<footer class="note">無料版：全300問のうち30問を収録。問題は国土交通省「無人航空機の飛行の安全に関する教則」（第5版）をもとに作成したオリジナル問題です（過去問ではありません）。出典：国土交通省ホームページ。全300問版は準備中です。</footer>
+
+<script>
+const QUESTIONS = [
+{"answer": 2, "category": "規則", "choices": ["機体重量に関わらず、すべての無人航空機に登録が義務付けられている", "登録が必要なのは、業務用に使用する無人航空機のみである", "重量100g以上の無人航空機が登録の対象である"], "explanation": "重量100g以上の無人航空機（ドローン・ラジコン機等）は登録が義務付けられており、登録記号の表示とリモートID機能の搭載が必要である。100g未満のものは登録の対象外で、航空法上の無人航空機にも該当しない。", "id": 1, "note": "教則第3章 3.1 p.7", "question": "無人航空機の登録制度について、正しいものはどれか。"},
+{"answer": 1, "category": "規則", "choices": ["無人航空機として登録が必要である", "模型航空機に分類される", "航空法の規制を一切受けないため、空港周辺でも自由に飛行できる"], "explanation": "100g未満のものは無人航空機ではなく模型航空機に分類され、登録も不要である。ただし模型航空機にも航空法上の規制があり、管制圏等での飛行禁止や事前届出が必要な場合があるため、自由に飛行できるわけではない。", "id": 28, "note": "教則第3章 3.1（1）p.7", "question": "重量100g未満の機体の分類として、正しいものはどれか。"},
+{"answer": 1, "category": "規則", "choices": ["補助者を配置せずに飛行させる場合", "十分な強度を有する紐（長さ30m以内のもの）により係留して行う飛行", "最大離陸重量25kg以上の機体による飛行"], "explanation": "30m以内の紐等で係留する飛行はリモートID搭載が免除されるほか、あらかじめ届け出たリモートID特定区域での飛行や、警察等が秘匿を必要とする業務で行う飛行も免除対象である。補助者なしの飛行や大型機の飛行は免除事由ではない。", "id": 37, "note": "教則第3章 3.1.2（1）5）p.14", "question": "次のうち、リモートID機能の搭載が免除される飛行はどれか。"},
+{"answer": 1, "category": "規則", "choices": ["空港の敷地の上空のみを指す", "進入表面、転移表面、水平表面、延長進入表面、円錐表面、外側水平表面の上空の空域など、空港やヘリポート等の周辺に設定された空域を指す", "空港から半径9km以内の地表全域を指す"], "explanation": "飛行が禁止される空港等の周辺の空域は、進入表面等の上空の空域や、飛行場周辺で国土交通大臣が告示で定める空域である。敷地の上空のみに限られず、半径による一律の定めでもない。", "id": 47, "note": "教則第3章 3.1.2（2）1）a p.14", "question": "原則として飛行が禁止される「空港等の周辺の空域」の説明として、正しいものはどれか。"},
+{"answer": 1, "category": "規則", "choices": ["モニターを一度でも確認すれば目視外飛行に該当する", "バッテリー残量を確認する目的等で一時的に目を離してモニターを確認することは、目視飛行の範囲内となる", "補助者に監視を任せている間は目視飛行に該当する"], "explanation": "安全な飛行のためバッテリー残量確認等の目的で一時的にモニターを見ることは目視飛行の範囲内である。補助者による監視は目視には含まれない。", "id": 56, "note": "教則第3章 3.1.2（2）2）b p.15-16", "question": "目視飛行の範囲に関する説明として、正しいものはどれか。"},
+{"answer": 2, "category": "規則", "choices": ["係留すれば、空港等の周辺の空域でも許可なく飛行できる", "係留すれば、高度150m以上の空域でも許可なく飛行できる", "十分な強度を有する紐等（30m以下）で係留し、第三者の立入管理等の措置を講じて飛行させる場合は、人口集中地区、夜間飛行、目視外飛行、第三者から30m以内の飛行及び物件投下に係る手続き等が不要である"], "explanation": "係留の例外で不要となるのは、人口集中地区・夜間・目視外・30m以内・物件投下に関する手続き等である。空港周辺や150m以上の空域の許可まで不要になるものではない。", "id": 65, "note": "教則第3章 3.1.2（2）3）c p.18", "question": "紐等で係留した場合の例外として、正しいものはどれか。"},
+{"answer": 1, "category": "規則", "choices": ["模型航空機は航空法の規制を一切受けない", "航空交通管制圏等における模型航空機の飛行は禁止されており、空港等の周辺・航空路内の空域（高度150m以上）・高度250m以上の空域で飛行させる場合は国土交通省への事前の届出が必要である", "模型航空機を飛行させる場合は、常に機体の登録が必要である"], "explanation": "100g未満を含む模型航空機も航空法で規制され、管制圏・情報圏・特別管制空域等や緊急用務空域では飛行が禁止される。また空港等の周辺、航空路内の150m以上の空域、高度250m以上の空域では事前届出が必要である。登録制度の対象ではない。", "id": 75, "note": "教則第3章 3.1（3）7）p.12-13", "question": "模型航空機に対する航空法の規制として、正しいものはどれか。"},
+{"answer": 1, "category": "規則", "choices": ["飛行日誌は紙の形態でなければならず、電子データは認められない", "飛行日誌は紙又は電子データの形態を問わないが、特定飛行を行う場合は携行し、速やかに参照や提示できるようにする必要がある", "飛行日誌への記載は飛行記録のみで足りる"], "explanation": "飛行日誌は形態を問わないが、特定飛行では携行が義務付けられ、速やかな参照・提示ができる必要がある。記載事項は飛行記録のほか、日常点検記録と点検整備記録も含まれる。", "id": 84, "note": "教則第3章 3.1.2（3）2）b p.23", "question": "飛行日誌の取扱いとして、正しいものはどれか。"},
+{"answer": 1, "category": "システム", "choices": ["すべてのプロペラが同じ方向に回転し、揚力を得ている", "隣り合うプロペラが互いに逆方向に回転し、反トルクを打ち消し合っている", "プロペラの回転数ではなく、機体の傾きだけで揚力を調整している"], "explanation": "マルチローターでは隣接するモーターが逆回転することで反トルク（機体が回ろうとする力）を相殺する。各モーターの回転数を変えることで揚力と姿勢を制御する。", "id": 7, "note": "教則第4章 4.3 p.38", "question": "マルチローターの飛行原理について、正しいものはどれか。"},
+{"answer": 2, "category": "システム", "choices": ["エレベーターはヨー方向、エルロンはピッチ方向、ラダーはロール方向を担う", "エルロンは推進パワー、スロットルはロール方向を担う", "エレベーターはピッチ方向、エルロンはロール方向、ラダーはヨー方向を担う"], "explanation": "飛行機はエレベーター（上下ピッチ方向）、エルロン（左右ロール方向）、ラダー（左右ヨー方向）、スロットル（推進パワー）の複合的な操縦で飛行する。他の組合せは役割の対応が入れ替わっており誤りである。", "id": 97, "note": "教則第4章 4.1 p.34", "question": "飛行機の操縦に用いる舵とスロットルの役割の組合せとして、正しいものはどれか。"},
+{"answer": 0, "category": "システム", "choices": ["指示した側のローターの回転数を下げ、反対側の回転数を上げることで機体が傾き、推力の合力が傾いた方向へ機体を移動させる", "全ローターの回転数を一様に上げると、機体は横方向へ移動する", "機体を傾けることなく、ローターの向きだけを変えて移動する"], "explanation": "前後左右移動は、指示した側のローター回転数を下げ反対側を上げることで機体が傾き、ローター推力の合力が傾くことで行われる。一様な回転数増加は上昇の動作であり、傾けずに移動するという記述も誤りである。", "id": 106, "note": "教則第4章 4.1 p.36", "question": "マルチローターの前後・左右移動の仕組みとして、正しいものはどれか。"},
+{"answer": 1, "category": "システム", "choices": ["機体の塗色を目立たない色に変更すること", "航空機からの視認性を高める灯火や塗色", "灯火を取り外し、航空機から見えにくくすること"], "explanation": "補助者を配置しない場合は、航空機からの視認性を高める灯火・塗色が追加で必要となる。視認性を下げる方向の措置は逆であり誤りである。", "id": 116, "note": "教則第4章 4.2 p.37", "question": "目視外飛行で補助者を配置しない場合に追加される装備として、正しいものはどれか。"},
+{"answer": 0, "category": "システム", "choices": ["一般に迎角が増すと揚力、抗力ともに増加するが、あまり大きな迎角にすると流れが翼表面から剥離し、揚力が減じて抗力が増大し失速を招く", "迎角を大きくするほど無制限に揚力が増し、失速することはない", "迎角が増すと揚力は増えるが抗力は減少する"], "explanation": "迎角の増加で揚力・抗力はともに増えるが、過大な迎角では流れが剥離して揚力減少・抗力増大となり失速を招く。無制限に揚力が増える、抗力が減少するという記述は誤りである。", "id": 125, "note": "教則第4章 4.3 p.38", "question": "迎角と揚力・抗力の関係として、正しいものはどれか。"},
+{"answer": 2, "category": "システム", "choices": ["3セルのバッテリーの電圧は、セル数に関わらず3.7Vのままである", "3セルのバッテリーの電圧は、3.7V÷3で約1.23Vとなる", "3セルのバッテリーの電圧は、3.7V×3で11.1Vとなる"], "explanation": "電圧はセル当たりの電圧（リチウムポリマーなら3.7V）×セル数で決まるため、3セルでは11.1Vとなる。セル数で変わらない、割り算をするという計算は誤りである。", "id": 134, "note": "教則第4章 4.4 p.43", "question": "リチウムポリマーバッテリーの電圧について、正しいものはどれか。セル当たりの電圧を3.7Vとする。"},
+{"answer": 0, "category": "システム", "choices": ["バッテリーから大きな電流が流れたことで一時的な電圧低下が生じたことによるものである", "急上昇によってバッテリーの容量そのものが永久に減少したためである", "充電率の表示は電流とは無関係であり、故障の兆候である"], "explanation": "満充電のバッテリーで急上昇させると大きな電流が流れて一時的な電圧低下が生じ、残量が減ったように見えることがある。容量が永久に減ったわけではなく、電流と無関係な故障でもない。", "id": 144, "note": "教則第4章 4.4 p.45", "question": "満充電のリチウムポリマーバッテリーで急上昇させた直後に残量が減ったように見える現象について、正しいものはどれか。"},
+{"answer": 2, "category": "システム", "choices": ["169MHz帯は画像伝送の主回線として使用される", "無人航空機で使用される周波数帯は2.4GHz帯のみである", "主な周波数帯は2.4GHz帯、5.7GHz帯、920MHz帯、73MHz帯、169MHz帯であり、169MHz帯は主に無人移動体画像伝送システムの無線局のバックアップ回線として使用される"], "explanation": "主な周波数帯は2.4GHz、5.7GHz、920MHz、73MHz、169MHzの各帯で、169MHz帯は主に2.4GHz帯及び5.7GHz帯の画像伝送システムのバックアップ回線として使われる。主回線とする記述や2.4GHzのみとする記述は誤りである。", "id": 153, "note": "教則第4章 4.5 p.47", "question": "無人航空機の運航で使用される電波の周波数帯について、正しいものはどれか。"},
+{"answer": 2, "category": "運航体制", "choices": ["市販の風邪薬であれば、服用後でも飛行させてよい", "少量のアルコールであれば操縦に影響しないため飛行させてよい", "アルコール又は薬物の影響により正常な操縦ができないおそれがある間は、飛行させてはならない"], "explanation": "アルコールや薬物の影響で正常な操縦ができないおそれがある間の飛行は禁止されている。眠気を催す市販薬なども影響がありうるため、服用時は飛行を控える。", "id": 13, "note": "教則第3章 3.1.2 p.21", "question": "操縦者の遵守事項として、正しいものはどれか。"},
+{"answer": 1, "category": "運航体制", "choices": ["騒音は飛行場所のルールに含まれないため考慮しなくてよいこと", "騒音の発生に注意すること", "騒音対策として夜間に飛行することが推奨されること"], "explanation": "ルール・マナーの遵守として、飛行に際しては騒音の発生に注意をすることとされている。騒音を考慮しなくてよいとする考え方や、夜間飛行を推奨する記述は教則にない。", "id": 167, "note": "教則第2章 2.1 p.2", "question": "飛行に際して注意すべき事項として、教則が挙げているものはどれか。"},
+{"answer": 0, "category": "運航体制", "choices": ["計画はドローン情報基盤システム（飛行計画通報機能）に事前に通報するが、あらかじめ通報することが困難な場合には事後に通報してもよいこと", "通報は口頭で関係者に伝えればよく、システムへの入力は不要であること", "事前に通報できなかった場合は、通報を省略してよいこと"], "explanation": "飛行計画はドローン情報基盤システム（飛行計画通報機能）に事前に通報するのが原則で、あらかじめ通報することが困難な場合に限り事後の通報が認められる。省略が認められるわけではない。", "id": 178, "note": "教則第2章 2.2 p.4", "question": "飛行計画の通報について、正しいものはどれか。"},
+{"answer": 2, "category": "運航体制", "choices": ["睡眠不足でも、飛行直前に仮眠を取れば疲労の蓄積は問題にならないこと", "疲労が蓄積していても、短時間の飛行であれば操縦してよいこと", "前日に十分な睡眠を取り、睡眠不足や疲労が蓄積した状態で操縦しないこと"], "explanation": "前日に十分な睡眠を取り、睡眠不足や疲労が蓄積した状態で操縦しないなど体調管理に努める。蓄積した疲労を抱えた操縦は、飛行時間の長短にかかわらず避けるべきである。", "id": 189, "note": "教則第2章 2.2 p.5", "question": "睡眠と疲労に関する体調管理として、正しいものはどれか。"},
+{"answer": 0, "category": "運航体制", "choices": ["機体が通電している場合は電源を切るなど速やかに措置を講じ、プロペラがまだ回転している場合は不用意に機体に接近しないこと", "プロペラが回転していても、すぐに手で止めに行くこと", "バッテリーの発火のおそれがあっても、電源は入れたままにすること"], "explanation": "墜落した機体は、交通への支障やバッテリーの発火等により周囲に危険を及ぼすことがないよう、通電している場合は電源を切るなど速やかに措置を講ずる。プロペラが回転している場合は不用意に接近せず十分注意する。", "id": 199, "note": "教則第2章 2.3 p.6", "question": "機体が墜落した場合の措置として、正しいものはどれか。"},
+{"answer": 2, "category": "運航体制", "choices": ["機体自体に財産的価値はないため、盗難対策は不要であること", "セキュリティは所有者だけの課題で、操縦者は取り組まなくてよいこと", "無人航空機及びその遠隔操縦のための機器を適切に管理することで、盗難等を防止することが望ましいこと"], "explanation": "無人航空機は盗難のほか悪用を意図した運航の妨害やコントロールの奪取の危険があり、所有者及び操縦者はセキュリティ確保に取り組まなければならない。対策の例として、機体及び遠隔操縦のための機器を適切に管理し盗難等を防止することが望ましいとされる。", "id": 210, "note": "教則第5章 5.1 p.55", "question": "無人航空機に係るセキュリティ確保について、正しいものはどれか。"},
+{"answer": 1, "category": "運航体制", "choices": ["機体との距離が離れるほど障害物との距離は正確に把握できること", "操縦者の視線と回転翼航空機の正面方向が異なる場合に意図しない方向に飛行してしまう場合が発生しやすく、機体との距離が離れると障害物との距離差が掴みにくくなること", "機体の正面方向と視線が異なっても操作ミスは起こらないこと"], "explanation": "手動操縦では、操縦者の視線と機体の正面方向が異なる場合に意図しない方向へ飛行しやすく、距離が離れると機体付近の障害物との距離差が掴みにくくなり接触しやすい状況となる。", "id": 221, "note": "教則第5章 5.2 p.60", "question": "手動操縦におけるヒューマンエラーの傾向として、正しいものはどれか。"},
+{"answer": 2, "category": "安全・気象", "choices": ["乱層雲", "積乱雲", "巻雲"], "explanation": "教則では、雲には10種雲形と呼ばれる10種類の雲の形があり、上層雲として巻雲・巻層雲・巻積雲が、中層雲として高層雲・乱層雲・高積雲が、低層雲と下層から発達する雲として積雲・積乱雲・層積雲・層雲があるとされている。", "id": 19, "note": "教則第6章 6.2 p.72", "question": "上層雲に分類される雲として、正しいものはどれか。"},
+{"answer": 1, "category": "安全・気象", "choices": ["安全マージンは飛行高度には関係しない", "飛行領域に危険半径を加えた範囲を無人地帯として飛行する。危険半径は高度と同じ数値又は30mのいずれか長い方である", "危険半径は一律10mである"], "explanation": "原則として飛行空域に安全マージンを加えて実施し、飛行領域に危険半径（高度と同じ数値か30mの長い方）を加えた範囲に立入管理措置を講じて無人地帯とした後に飛行する。10m固定ではない。", "id": 236, "note": "教則第6章 6.1 p.63", "question": "安全マージンに関する記述として、正しいものはどれか。"},
+{"answer": 2, "category": "安全・気象", "choices": ["緊急連絡先は事故が起きてから調べる", "連絡先は操縦者だけが知っていれば共有不要である", "事前に緊急連絡先を定義しておく"], "explanation": "万一の発生を想定し、緊急連絡先は事前に定義しておく。発生後に調べるのでは初動が遅れ、体制として不十分である。", "id": 247, "note": "教則第6章 6.1 p.64", "question": "事故・インシデントへの事前の備えとして、正しいものはどれか。"},
+{"answer": 0, "category": "安全・気象", "choices": ["北半球では反時計回りに中心に向かって周囲から風が吹き込み、中心部では上昇気流が起こり雲が発生して一般的に天気は悪い", "中心部では下降気流が発生する", "周囲より気圧が高いところをいう"], "explanation": "低気圧は周囲より気圧が低く、北半球では反時計回りに中心へ風が吹き込み、上昇気流で雲が発生し天気が悪くなりやすい。下降気流や気圧が高いのは高気圧の説明である。", "id": 258, "note": "教則第6章 6.2 p.70-71", "question": "低気圧に関する記述として、正しいものはどれか。"},
+{"answer": 2, "category": "安全・気象", "choices": ["北の風とは南から北へ吹く風をいう", "風向は風が吹いて行く方向で表す", "北の風とは北から南に向かって吹く風をいい、風向は360度を16等分して表す"], "explanation": "風向は風が吹いてくる方向で表し、北の風は北から南へ吹く風である。360度を16等分し北から時計回りに表す。", "id": 268, "note": "教則第6章 6.2 p.72", "question": "風向の表し方として、正しいものはどれか。"},
+{"answer": 0, "category": "安全・気象", "choices": ["広い面積の太陽光パネルやアスファルト・コンクリートの地面が多い市街地では、地表面が暖められて発生する上昇気流に注意が必要である", "上昇気流は山岳地帯でのみ発生する", "運動場のような場所ではつむじ風は発生しない"], "explanation": "地表面が暖められると上昇気流が発生するため、太陽光パネルやアスファルト等の多い市街地は注意が必要で、広い運動場では強い日射によりつむじ風が発生する可能性がある。", "id": 279, "note": "教則第6章 6.2 p.73", "question": "上昇気流に関する注意として、正しいものはどれか。"},
+{"answer": 2, "category": "安全・気象", "choices": ["灯火のない機体でも月明かりがあればよい", "夜間でも目視外飛行を原則とする", "原則として目視外飛行は実施せず、機体の向きを視認できる灯火が装備された機体を使用する"], "explanation": "夜間は姿勢・方向の視認や周囲の安全確認が困難なため、原則として目視外飛行は実施せず、機体の向きを視認できる灯火を装備した機体を使う。事前に第三者の立入りのない安全な場所で訓練し、障害物等には照明が必要である。", "id": 290, "note": "教則第6章 6.4 p.78", "question": "夜間飛行の運航として、正しいものはどれか。"}
+];
+
+const CATEGORIES = ["規則", "システム", "運航体制", "安全・気象"];
+const MOCK_MINUTES = 10;
+const MOCK_COUNT = 10;
+const PASS_RATIO = 0.8;
+const LS_WRONG = "droneExam.wrongIds";
+const LS_HISTORY = "droneExam.history";
+const LABELS = ["ア", "イ", "ウ"];
+
+/* ---------- storage ---------- */
+function load(key, fallback) {
+  try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; }
+  catch (e) { return fallback; }
+}
+function save(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* ignore */ }
+}
+function getWrongIds() {
+  const valid = new Set(QUESTIONS.map(q => q.id));
+  return load(LS_WRONG, []).filter(id => valid.has(id));
+}
+function updateWrong(id, correct) {
+  const set = new Set(getWrongIds());
+  if (correct) set.delete(id); else set.add(id);
+  save(LS_WRONG, [...set]);
+}
+function addHistory(entry) {
+  const h = load(LS_HISTORY, []);
+  h.unshift(entry);
+  save(LS_HISTORY, h.slice(0, 50));
+}
+
+/* ---------- utils ---------- */
+const $ = id => document.getElementById(id);
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function pct(c, t) { return t ? Math.round((c / t) * 100) : 0; }
+function fmtTime(sec) {
+  const m = Math.floor(sec / 60), s = sec % 60;
+  return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+}
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+const MODE_NAMES = { practice: "分野別演習", mock: "模擬試験", review: "復習モード" };
+
+/* ---------- screens ---------- */
+const SCREENS = ["home", "category", "quiz", "result"];
+function show(name) {
+  SCREENS.forEach(s => $("screen-" + s).classList.toggle("hidden", s !== name));
+  $("homeBtn").classList.toggle("hidden", name === "home");
+  window.scrollTo(0, 0);
+}
+
+/* ---------- state ---------- */
+let S = null;        // current session
+let timerId = null;
+
+function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
+
+function goHome() {
+  if (S && !S.finished && S.answers.some(a => a !== null)) {
+    if (!confirm("途中の解答は保存されません。ホームに戻りますか？")) return;
+  }
+  stopTimer();
+  S = null;
+  renderHome();
+  show("home");
+}
+
+/* ---------- home ---------- */
+function renderHome() {
+  const wrong = getWrongIds();
+  $("wrongBadge").textContent = wrong.length + "問";
+  $("modeReview").disabled = wrong.length === 0;
+  $("reviewDesc").textContent = wrong.length === 0
+    ? "間違えた問題はまだありません。演習や模擬試験で間違えた問題がここに溜まります。"
+    : "これまでに間違えた問題だけを解き直します。正解すると復習リストから外れます。";
+
+  const h = load(LS_HISTORY, []);
+  if (!h.length) {
+    $("historyBody").innerHTML = '<p class="muted">まだ履歴はありません。</p>';
+  } else {
+    const rows = h.slice(0, 10).map(e => {
+      const p = pct(e.correct, e.total);
+      let res = "";
+      if (e.mode === "mock") res = e.passed ? '<span class="ok-text">合格</span>' : '<span class="ng-text">不合格</span>';
+      return `<tr><td>${fmtDate(e.date)}</td><td>${esc(MODE_NAMES[e.mode] || e.mode)}${e.category ? "<br><span class='muted'>" + esc(e.category) + "</span>" : ""}</td>
+        <td class="num">${e.correct}/${e.total}</td><td class="num">${p}%</td><td>${res}</td></tr>`;
+    }).join("");
+    const mocks = h.filter(e => e.mode === "mock");
+    const best = mocks.length ? Math.max(...mocks.map(e => pct(e.correct, e.total))) : null;
+    $("historyBody").innerHTML =
+      (best !== null ? `<p class="muted">模擬試験 ${mocks.length}回受験・最高 ${best}%</p>` : "") +
+      `<table class="history"><thead><tr><th>日時</th><th>モード</th><th class="num">正解</th><th class="num">率</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+}
+
+/* ---------- category select ---------- */
+function renderCategories() {
+  const grid = $("catGrid");
+  const count = c => QUESTIONS.filter(q => q.category === c).length;
+  grid.innerHTML =
+    `<button type="button" class="all" data-cat="">全分野<small>${QUESTIONS.length}問</small></button>` +
+    CATEGORIES.map(c => `<button type="button" data-cat="${esc(c)}">${esc(c)}<small>${count(c)}問</small></button>`).join("");
+  grid.querySelectorAll("button").forEach(b => b.addEventListener("click", () => startPractice(b.dataset.cat || null)));
+}
+
+/* ---------- session start ---------- */
+function newSession(mode, questions, extra = {}) {
+  stopTimer();
+  S = Object.assign({
+    mode, questions, idx: 0,
+    answers: new Array(questions.length).fill(null),
+    finished: false, startedAt: Date.now(), category: null
+  }, extra);
+}
+function startPractice(category) {
+  const qs = QUESTIONS.filter(q => !category || q.category === category);
+  newSession("practice", shuffle(qs), { category: category || "全分野" });
+  show("quiz");
+  renderQuiz();
+}
+function startMock() {
+  newSession("mock", shuffle(QUESTIONS).slice(0, MOCK_COUNT), { deadline: Date.now() + MOCK_MINUTES * 60 * 1000 });
+  show("quiz");
+  renderQuiz();
+  tick();
+  timerId = setInterval(tick, 500);
+}
+function startReview() {
+  const ids = new Set(getWrongIds());
+  const qs = QUESTIONS.filter(q => ids.has(q.id));
+  if (!qs.length) { renderHome(); return; }
+  newSession("review", shuffle(qs));
+  show("quiz");
+  renderQuiz();
+}
+
+function tick() {
+  if (!S || S.mode !== "mock" || S.finished) return;
+  const left = Math.max(0, Math.ceil((S.deadline - Date.now()) / 1000));
+  const t = $("timer");
+  t.textContent = "残り " + fmtTime(left);
+  t.classList.toggle("low", left <= 300);
+  if (left <= 0) {
+    stopTimer();
+    alert("時間切れです。採点します。");
+    finish();
+  }
+}
+
+/* ---------- quiz render ---------- */
+function renderQuiz() {
+  const q = S.questions[S.idx];
+  const total = S.questions.length;
+  const answered = S.answers[S.idx];
+  const isMock = S.mode === "mock";
+  const revealed = !isMock && answered !== null;
+
+  $("progressText").textContent = `${S.idx + 1}/${total}`;
+  $("catTag").textContent = q.category;
+  $("timer").classList.toggle("hidden", !isMock);
+  const sl = $("scoreLive");
+  sl.classList.toggle("hidden", isMock);
+  if (!isMock) {
+    const done = S.answers.filter(a => a !== null).length;
+    const ok = S.answers.filter((a, i) => a !== null && a === S.questions[i].answer).length;
+    sl.textContent = `正解 ${ok}/${done}`;
+  }
+  const doneCount = isMock ? S.answers.filter(a => a !== null).length : S.idx + (answered !== null ? 1 : 0);
+  $("progressBar").style.width = (doneCount / total * 100) + "%";
+
+  $("questionText").textContent = q.question;
+
+  const box = $("choices");
+  box.innerHTML = "";
+  q.choices.forEach((c, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "choice";
+    b.innerHTML = `<span class="lbl">${LABELS[i] || i + 1}</span><span>${esc(c)}</span>`;
+    if (isMock) {
+      if (answered === i) b.classList.add("selected");
+      b.addEventListener("click", () => { S.answers[S.idx] = i; renderQuiz(); });
+    } else if (revealed) {
+      b.disabled = true;
+      if (i === q.answer) b.classList.add("correct");
+      else if (i === answered) b.classList.add("wrong");
+    } else {
+      b.addEventListener("click", () => answerPractice(i));
+    }
+    box.appendChild(b);
+  });
+
+  // feedback
+  const fb = $("feedback");
+  if (revealed) {
+    const ok = answered === q.answer;
+    fb.className = "feedback " + (ok ? "ok" : "ng");
+    fb.innerHTML = `<div class="verdict">${ok ? "◯ 正解" : "✕ 不正解"}</div>` +
+      (ok ? "" : `<p><b>正解：${LABELS[q.answer]}</b> ${esc(q.choices[q.answer])}</p>`) +
+      `<div class="exp"><b>解説</b><br>${esc(q.explanation)}</div>`;
+  } else {
+    fb.className = "feedback hidden";
+    fb.innerHTML = "";
+  }
+
+  // actions
+  const act = $("quizActions");
+  act.innerHTML = "";
+  const mk = (label, cls, fn, disabled) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "btn " + (cls || ""); b.textContent = label;
+    if (disabled) b.disabled = true;
+    b.addEventListener("click", fn);
+    act.appendChild(b);
+    return b;
+  };
+  const last = S.idx === total - 1;
+  if (isMock) {
+    mk("前へ", "secondary", () => { S.idx--; renderQuiz(); }, S.idx === 0);
+    if (!last) mk("次へ", "", () => { S.idx++; renderQuiz(); });
+    mk("提出して採点", last ? "" : "ghost", submitMock);
+    renderPalette();
+  } else {
+    $("palette").classList.add("hidden");
+    if (revealed) {
+      mk(last ? "結果を見る" : "次の問題へ", "", () => {
+        if (last) finish(); else { S.idx++; renderQuiz(); window.scrollTo(0, 0); }
+      });
+    }
+    if (!last || !revealed) mk("ここで終了", "ghost", () => {
+      if (S.answers.every(a => a === null)) { goHome(); return; }
+      finish();
+    });
+  }
+}
+
+function renderPalette() {
+  const p = $("palette");
+  p.classList.remove("hidden");
+  p.innerHTML = "";
+  S.questions.forEach((_, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = i + 1;
+    if (S.answers[i] !== null) b.classList.add("answered");
+    if (i === S.idx) b.classList.add("current");
+    b.addEventListener("click", () => { S.idx = i; renderQuiz(); });
+    p.appendChild(b);
+  });
+}
+
+function answerPractice(i) {
+  if (S.answers[S.idx] !== null) return;
+  S.answers[S.idx] = i;
+  const q = S.questions[S.idx];
+  updateWrong(q.id, i === q.answer);
+  renderQuiz();
+}
+
+function submitMock() {
+  const un = S.answers.filter(a => a === null).length;
+  const msg = un ? `未解答が${un}問あります。提出して採点しますか？` : "提出して採点しますか？";
+  if (!confirm(msg)) return;
+  finish();
+}
+
+/* ---------- finish & results ---------- */
+function finish() {
+  if (!S || S.finished) return;
+  stopTimer();
+  S.finished = true;
+
+  // practice/review: only count answered questions; mock: all questions
+  const items = S.questions.map((q, i) => ({ q, a: S.answers[i] }))
+    .filter(it => S.mode === "mock" || it.a !== null);
+
+  if (S.mode === "mock") items.forEach(it => updateWrong(it.q.id, it.a === it.q.answer));
+
+  const total = items.length;
+  const correct = items.filter(it => it.a === it.q.answer).length;
+  const passed = total > 0 && correct / total >= PASS_RATIO;
+  const elapsed = Math.round((Date.now() - S.startedAt) / 1000);
+
+  addHistory({
+    date: Date.now(), mode: S.mode, category: S.mode === "practice" ? S.category : null,
+    correct, total, passed: S.mode === "mock" ? passed : undefined, seconds: elapsed
+  });
+
+  // hero
+  const p = pct(correct, total);
+  let hero = `<div class="muted">${esc(MODE_NAMES[S.mode])}${S.mode === "practice" ? "（" + esc(S.category) + "）" : ""}</div>
+    <div class="pct">${p}%</div>
+    <div class="sub">${total}問中 <b>${correct}問</b> 正解</div>`;
+  if (S.mode === "mock") {
+    const need = Math.ceil(total * PASS_RATIO);
+    hero += `<div class="verdict-pill ${passed ? "pass" : "fail"}">${passed ? "合格" : "不合格"}</div>
+      <div class="sub">合格ライン 80%（${need}問以上） ・ 所要時間 ${fmtTime(Math.min(elapsed, MOCK_MINUTES * 60))}</div>`;
+    const un = items.filter(it => it.a === null).length;
+    if (un) hero += `<div class="sub">未解答 ${un}問（不正解として採点）</div>`;
+  }
+  $("resultHero").innerHTML = hero;
+
+  // categories
+  $("resultCats").innerHTML = CATEGORIES.map(c => {
+    const its = items.filter(it => it.q.category === c);
+    if (!its.length) return "";
+    const ok = its.filter(it => it.a === it.q.answer).length;
+    const cp = pct(ok, its.length);
+    const color = cp >= 80 ? "var(--ok)" : cp >= 60 ? "var(--warn)" : "var(--ng)";
+    return `<div class="cat-row"><div class="head"><span>${esc(c)}</span><b>${ok}/${its.length}（${cp}%）</b></div>
+      <div class="meter"><div style="width:${cp}%;background:${color}"></div></div></div>`;
+  }).join("") || '<p class="muted">解答した問題がありません。</p>';
+
+  // missed
+  const missed = items.filter(it => it.a !== it.q.answer);
+  $("missedTitle").textContent = `間違えた問題（${missed.length}問）`;
+  $("resultMissed").innerHTML = missed.length ? missed.map(it => {
+    const q = it.q;
+    const your = it.a === null ? "未解答" : `${LABELS[it.a]} ${esc(q.choices[it.a])}`;
+    return `<div class="missed">
+      <div class="muted">${esc(q.category)}</div>
+      <div class="q">${esc(q.question)}</div>
+      <div class="row your">あなたの解答：${your}</div>
+      <div class="row ans">正解：${LABELS[q.answer]} ${esc(q.choices[q.answer])}</div>
+      <div class="exp">${esc(q.explanation)}</div>
+    </div>`;
+  }).join("") : '<p class="ok-text">全問正解です！</p>';
+
+  const mode = S.mode, cat = S.category;
+  $("retryBtn").onclick = () => {
+    if (mode === "mock") startMock();
+    else if (mode === "review") { if (getWrongIds().length) startReview(); else { S = null; renderHome(); show("home"); } }
+    else startPractice(cat === "全分野" ? null : cat);
+  };
+  $("retryBtn").textContent = mode === "review" && getWrongIds().length === 0 ? "ホームへ" : "もう一度";
+
+  show("result");
+}
+
+/* ---------- wiring ---------- */
+$("modePractice").addEventListener("click", () => { renderCategories(); show("category"); });
+$("modeMock").addEventListener("click", () => {
+  if (confirm(`模擬試験を開始します（全${QUESTIONS.length}問から${MOCK_COUNT}問を抽出・制限時間${MOCK_MINUTES}分）。よろしいですか？`)) startMock();
+});
+$("modeReview").addEventListener("click", startReview);
+$("homeBtn").addEventListener("click", goHome);
+document.querySelectorAll("[data-go-home]").forEach(b => b.addEventListener("click", goHome));
+$("resetBtn").addEventListener("click", () => {
+  if (!confirm("学習履歴と復習リストをすべて消去しますか？")) return;
+  localStorage.removeItem(LS_WRONG);
+  localStorage.removeItem(LS_HISTORY);
+  renderHome();
+});
+window.addEventListener("beforeunload", e => {
+  if (S && S.mode === "mock" && !S.finished) { e.preventDefault(); e.returnValue = ""; }
+});
+
+renderHome();
+</script>
+<script>if ("serviceWorker" in navigator) { navigator.serviceWorker.register("sw.js").catch(function(){}); }</script>
+</body>
+</html>
